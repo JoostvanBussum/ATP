@@ -2,33 +2,23 @@
 #include <time.h> 
 #include <iostream>
 
-class SensorInterface {
-    private:
-        int min, max;
+extern "C" {
 
-    public:
-        virtual float readValue() = 0;
-};
+    float readMockedPHValue(float min, float max) {
 
-class PHSensor: public SensorInterface {
-    private:
-        int min = 7;
-        int max = 9;
+            srand(time(NULL));
 
-    public:
+            // float random = ((float) rand()) / (float) RAND_MAX;
 
-        float readValue() {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_real_distribution<> dist(PHSensor::min, PHSensor::max);
-            return dist(gen);
-        }
-};
-
-int main() {
-    PHSensor sensor;
-
-    std::cout << sensor.readValue();
-
-    return 0;
+            // float range = max - min;  
+            // return (random*range) + min;
+            // float randomPH = (random*range) + min;
+            // std::cout << randomPH << std::endl;
+            // return (min + 1) + (((float) rand()) / (float) RAND_MAX) * (max - (min + 1));
+            float random = ((float) rand()) / (float) RAND_MAX;
+            float diff = max - min;
+            float r = random * diff;
+            return min + r;
+        };
+        
 }
