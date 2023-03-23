@@ -1,5 +1,4 @@
-import DS18B20
-
-class HeatModule:
-    def __init__(self, DS18B20Sensor: DS18B20):
-        self.DS18B20Sensor = DS18B20Sensor
+def adjustTemperature(currentTemp: float, goalTemp: float):
+    if currentTemp > goalTemp:
+        return -0.05
+    return 0.05

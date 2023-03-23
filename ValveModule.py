@@ -1,3 +1,4 @@
-class ValveModule:
-    def __init__(self):
-        pass
+def adjustPH(currentPH: float, goalPH: float):
+    if currentPH > goalPH:
+        return -0.05
+    return 0.05

@@ -1,17 +1,32 @@
 import ctypes
 import time
 from DS18B20 import readMockedTemperaturevalue
+from HeatModule import adjustTemperature
+from ValveModule import adjustPH
 
-# setup for c++ library
+# setup for c++ pH library
 pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
 pHSensor.readMockedPHValue.restype = ctypes.c_float
 
-pHWaarde = pHSensor.readMockedPHValue( ctypes.c_float(7) , ctypes.c_float(10) );
+# variables to be used in the program
+goalTemperature = 20
+goalPH = 7.5
+adjustedHeat = 0
+adjustedPH = 0
 
-print("pH waarde: %.1f" % round(pHWaarde, 1))
-print("temperatuur: ", readMockedTemperaturevalue(15, 20))
 while True:
+    currentTemperature = round(readMockedTemperaturevalue(goalTemperature - 3 + adjustedHeat, goalTemperature), 2)
+    currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 1 + adjustedPH) , ctypes.c_float(goalPH)), 1)
 
-    
+    if(currentTemperature < goalTemperature - 0.5 or currentTemperature > goalTemperature + 0.5):
+        adjustedHeat += adjustTemperature(currentTemperature, goalTemperature)
 
-    time.sleep(3)
+    print("temp goal: ", goalTemperature, " current: ", currentTemperature, " added heat: ", adjustedHeat) 
+
+    if(currentPH < goalPH - 0.1 or currentPH > goalPH + 0.1):
+        adjustedPH += adjustPH(currentPH, goalPH)
+
+    print("pH goal: ", goalPH, " current: ", currentPH, " added pH: ", adjustedPH)
+
+    time.sleep(0.5)
+#     pass
