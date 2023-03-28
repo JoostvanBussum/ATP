@@ -1,18 +1,26 @@
 import ctypes
 import time
 from DS18B20 import readMockedTemperaturevalue
-from HeatModule import adjustTemperature
-from ValveModule import adjustPH
+from HeatModule import HeatModule
+from loggers import *
 
 # setup for c++ pH library
 pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
+valveModule = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/ValveModule.so")
+
 pHSensor.readMockedPHValue.restype = ctypes.c_float
+valveModule.adjustPHValue.restype = ctypes.c_float
 
 # variables to be used in the program
 goalTemperature = 20
 goalPH = 7.5
 adjustedHeat = 0
 adjustedPH = 0
+
+heatModule = HeatModule()
+
+adjustTemperature = loggedAdjustHeat(heatModule.adjustTemperature)
+readMockedTemperaturevalue = loggedReadTemp(readMockedTemperaturevalue)
 
 while True:
     currentTemperature = round(readMockedTemperaturevalue(goalTemperature - 3 + adjustedHeat, goalTemperature), 2)
@@ -21,12 +29,11 @@ while True:
     if(currentTemperature < goalTemperature - 0.5 or currentTemperature > goalTemperature + 0.5):
         adjustedHeat += adjustTemperature(currentTemperature, goalTemperature)
 
-    print("temp goal: ", goalTemperature, " current: ", currentTemperature, " added heat: ", adjustedHeat) 
-
     if(currentPH < goalPH - 0.1 or currentPH > goalPH + 0.1):
-        adjustedPH += adjustPH(currentPH, goalPH)
+        adjustedPH += valveModule.adjustPHValue(ctypes.c_float(currentPH), ctypes.c_float(goalPH))
 
+    print("temp goal: ", goalTemperature, " current: ", currentTemperature, " added heat: ", adjustedHeat) 
     print("pH goal: ", goalPH, " current: ", currentPH, " added pH: ", adjustedPH)
+    print("----------------------------------------------")
 
     time.sleep(0.5)
-#     pass

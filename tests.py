@@ -1,9 +1,7 @@
 import unittest
 import ctypes
-import time
 from DS18B20 import readMockedTemperaturevalue
-from HeatModule import adjustTemperature
-from ValveModule import adjustPH
+from HeatModule import HeatModule
 
 class TestWaterMonitoringSystem(unittest.TestCase):
 
@@ -31,8 +29,10 @@ class TestWaterMonitoringSystem(unittest.TestCase):
         adjustedHeat = 0
         currentTemperature = round(readMockedTemperaturevalue(goalTemperature - 3 + adjustedHeat, goalTemperature), 2)
 
+        heatModule = HeatModule()
+
         while(currentTemperature < goalTemperature - 0.5 or currentTemperature > goalTemperature + 0.5):
-            adjustedHeat += adjustTemperature(currentTemperature, goalTemperature)
+            adjustedHeat += heatModule.adjustTemperature(currentTemperature, goalTemperature)
             currentTemperature = round(readMockedTemperaturevalue(goalTemperature - 3 + adjustedHeat, goalTemperature), 2)
 
         message = "Should be around 20.0 with a margin of error of 0.5"
@@ -41,14 +41,17 @@ class TestWaterMonitoringSystem(unittest.TestCase):
     
     def test_PHSensorValveModuleIntegrationTest(self):
         pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
+        valveModule = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/ValveModule.so")
+
         pHSensor.readMockedPHValue.restype = ctypes.c_float
+        valveModule.adjustPHValue.restype = ctypes.c_float
 
         goalPH = 7.5
         adjustedPH = 0
         currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 2 + adjustedPH) , ctypes.c_float(goalPH)), 1)
 
         while(currentPH < goalPH - 0.1 or currentPH > goalPH + 0.1):
-            adjustedPH += adjustPH(currentPH, goalPH)
+            adjustedPH += valveModule.adjustPHValue(ctypes.c_float(currentPH), ctypes.c_float(goalPH))
             currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 2 + adjustedPH) , ctypes.c_float(goalPH)), 1)
 
         message = "Should be around 7.5 with a margin of error of 0.1"
@@ -57,7 +60,12 @@ class TestWaterMonitoringSystem(unittest.TestCase):
 
     def test_systemTest(self):
         pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
+        valveModule = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/ValveModule.so")
+
         pHSensor.readMockedPHValue.restype = ctypes.c_float
+        valveModule.adjustPHValue.restype = ctypes.c_float
+
+        heatModule = HeatModule()
 
         goalTemperature = 15
         adjustedHeat = 0
@@ -66,14 +74,16 @@ class TestWaterMonitoringSystem(unittest.TestCase):
         adjustedPH = 0
 
         currentTemperature = round(readMockedTemperaturevalue(goalTemperature - 3 + adjustedHeat, goalTemperature), 2)
-        currentPH = currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 1 + adjustedPH) , ctypes.c_float(goalPH)), 1)
+        currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 1 + adjustedPH) , ctypes.c_float(goalPH)), 1)
 
-        while((currentPH < goalPH - 0.1 or currentPH > goalPH + 0.1) and (currentTemperature < goalTemperature - 0.5 or currentTemperature > goalTemperature + 0.5)):
-            adjustedHeat += adjustTemperature(currentTemperature, goalTemperature)
-            adjustedPH += adjustPH(currentPH, goalPH)
-
+        while currentTemperature < goalTemperature - 0.5 or currentTemperature > goalTemperature + 0.5:
+            adjustedHeat += heatModule.adjustTemperature(currentTemperature, goalTemperature)
             currentTemperature = round(readMockedTemperaturevalue(goalTemperature - 3 + adjustedHeat, goalTemperature), 2)
-            currentPH = currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 1 + adjustedPH) , ctypes.c_float(goalPH)), 1)
+
+        while currentPH < goalPH - 0.1 or currentPH > goalPH + 0.1:
+            adjustedPH += valveModule.adjustPHValue(ctypes.c_float(currentPH), ctypes.c_float(goalPH))
+            currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(goalPH - 1 + adjustedPH) , ctypes.c_float(goalPH)), 2)
+        
         
         PHMessage = "Should be around 8.0 with a margin of error of 0.1"
         TemperatureMessage = "Should be around 15.0 with a margin of error of 0.5"

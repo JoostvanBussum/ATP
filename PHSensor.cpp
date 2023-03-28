@@ -1,7 +1,6 @@
 #include <random>
 #include <time.h> 
 #include <iostream>
-// #include 
 
 extern "C" {
 
@@ -13,10 +12,6 @@ extern "C" {
             float r = random * diff;
             return min + r;
 
-            // boost::mt19937 rng;
-            // boost::uniform_real<float> u(min, max);
-            // boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(rng, u);
-            // return gen();
         };
         
 }
