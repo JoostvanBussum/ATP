@@ -2,11 +2,10 @@ import unittest
 import ctypes
 from DS18B20 import readMockedTemperaturevalue
 from HeatModule import HeatModule
-
 class TestWaterMonitoringSystem(unittest.TestCase):
 
     def test_pHSensorUnitTest(self):
-        pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
+        pHSensor = ctypes.CDLL("PHSensor.so") 
         pHSensor.readMockedPHValue.restype = ctypes.c_float
 
         currentPH = round(pHSensor.readMockedPHValue(ctypes.c_float(6.9) , ctypes.c_float(7.1)), 2)
@@ -40,8 +39,8 @@ class TestWaterMonitoringSystem(unittest.TestCase):
         self.assertAlmostEqual(currentTemperature, goalTemperature, None, message, 1)
     
     def test_PHSensorValveModuleIntegrationTest(self):
-        pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
-        valveModule = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/ValveModule.so")
+        pHSensor = ctypes.CDLL("PHSensor.so") 
+        valveModule = ctypes.CDLL("ValveModule.so")
 
         pHSensor.readMockedPHValue.restype = ctypes.c_float
         valveModule.adjustPHValue.restype = ctypes.c_float
@@ -59,8 +58,8 @@ class TestWaterMonitoringSystem(unittest.TestCase):
         self.assertAlmostEqual(currentPH, goalPH, None, message, 0.1)
 
     def test_systemTest(self):
-        pHSensor = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/PHSensor.so") 
-        valveModule = ctypes.CDLL("C:/Users/Joost/Documents/GitHub/ATP/ValveModule.so")
+        pHSensor = ctypes.CDLL("PHSensor.so") 
+        valveModule = ctypes.CDLL("ValveModule.so")
 
         pHSensor.readMockedPHValue.restype = ctypes.c_float
         valveModule.adjustPHValue.restype = ctypes.c_float
